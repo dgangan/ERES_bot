@@ -41,14 +41,13 @@ public class ERESParser {
                                                             .select("span").attr("style","text-decoration: underline;");
     }
 
-    public Adresses getOutageSetOfAddresses(URL url) throws Exception{
+    public OutageDay getOutageSetOfAddresses(URL url) throws Exception{
         String link = url.toString();
         Integer linkId = Integer.valueOf(link.split("/")[6].split("-")[0]);
         LocalDate date = LocalDate.parse(link.substring(link.length()-15, link.length()-5));
-        System.out.println("<"+date+">");
         addresses = new HashSet<>();
 
-        String currentRegion = "";      //Used to store temporary parts of address while parsing
+        String currentRegion = "";      //Used to store temporary parts of address while iteration over elements
         String currentCity = "";
         String currentStreet = "";
         String currentDetails = "";
@@ -72,7 +71,7 @@ public class ERESParser {
 
             } else if(cityAloneMtc.find()){
                 currentCity = cityAloneMtc.group(1);
-                currentStreet = currentDetails = "";                //Clearing street/details once getting to new city
+                currentStreet = currentDetails = "";  //Clearing street/details once getting to new city
 
             } else if(streetMtc.find()){
                 currentStreet = streetMtc.group(1);
@@ -85,7 +84,7 @@ public class ERESParser {
             }
         }
         if (this.addresses.size() > 0) {
-            return new Adresses(addresses, date, linkId, link);}
+            return new OutageDay(addresses, date, linkId, link);}
         else {
             throw new IOException("Parsing failed");
         }

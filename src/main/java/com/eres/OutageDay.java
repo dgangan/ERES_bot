@@ -9,21 +9,21 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public class Adresses {
+public class OutageDay {
 
     private Set<Address> addresses;
     private LocalDate ldt;
     private Integer id;
     private String link;
 
-    public Adresses(Set<Address> addresses, LocalDate ldt, Integer id, String link) {
+    public OutageDay(Set<Address> addresses, LocalDate ldt, Integer id, String link) {
         this.addresses = addresses;
         this.ldt = ldt;
         this.id = id;
         this.link = link;
     }
 
-    public Adresses(String addresses, LocalDate ldt, Integer id, String link) {
+    public OutageDay(String addresses, LocalDate ldt, Integer id, String link) {
         try{
             System.out.println(addresses);
             setAddressesFromJsonString(addresses);

@@ -6,19 +6,22 @@ import java.io.InputStreamReader;
 import java.sql.*;
 import java.time.LocalDate;
 import java.util.Optional;
+import java.util.Properties;
 
 import oracle.ucp.jdbc.PoolDataSourceFactory;
 import oracle.ucp.jdbc.PoolDataSource;
 
 public class DBHelper {
 
-    String TABLE_NAME = "OUTAGES";
+    String TABLE_NAME = "outages";
     Connection conn;
 
-    public DBHelper() throws SQLException{
-        final String DB_URL="jdbc:oracle:thin:@xxxx";
-        final String DB_USER = "ADMIN";
-        final String DB_PASSWORD = "xxxx" ;
+    public DBHelper(String propertiesFile) throws SQLException, IOException {
+        Properties dbProperties = PropertiesLoader.loadPropertiesFile(propertiesFile);
+        final String DB_URL = dbProperties.getProperty("jdbc_url");
+        System.out.println(DB_URL);
+        final String DB_USER = dbProperties.getProperty("db_user");
+        final String DB_PASSWORD = dbProperties.getProperty("db_pass");
         final String CONN_FACTORY_CLASS_NAME="oracle.jdbc.pool.OracleDataSource";
 
         PoolDataSource pds = PoolDataSourceFactory.getPoolDataSource();
@@ -38,7 +41,7 @@ public class DBHelper {
     }
 
     public void writeOutageDay(Integer id, LocalDate date, String link, String jsonAddresses) throws SQLException {
-        final String queryStatement = "INSERT INTO " + TABLE_NAME + " (ID, DT, LINK, ADDR) VALUES (?,?,?,?)";
+        final String queryStatement = "INSERT INTO " + TABLE_NAME + " (outage_id, outage_date, outage_link, outage_data) VALUES (?,?,?,?)";
 
         System.out.println("\n Query is " + queryStatement);
 
@@ -57,9 +60,9 @@ public class DBHelper {
         }
     }
 
-    public Optional<Adresses> getOutageDayById(int id) throws IOException,SQLException{
-        final String queryStatement = "SELECT * FROM " + TABLE_NAME + " WHERE ID = " + id;
-        Optional<Adresses> optionalAdresses = Optional.empty();
+    public Optional<OutageDay> getOutageDayById(int id) throws IOException,SQLException{
+        final String queryStatement = "SELECT outage_id, outage_date, outage_link, outage_data FROM " + TABLE_NAME + " WHERE outage_id = " + id;
+        Optional<OutageDay> optionalAddresses = Optional.empty();
         try(PreparedStatement ps = conn.prepareStatement(queryStatement)){
             ResultSet rs = ps.executeQuery(queryStatement);
             if(rs.next()){
@@ -67,16 +70,16 @@ public class DBHelper {
                 String link = rs.getString(3);
                 Blob BlobJsonAddresses = rs.getBlob(4);
                 String JsonAddresses = blobToString(BlobJsonAddresses);
-                Adresses addresses = new Adresses(JsonAddresses, dt, id, link);
+                OutageDay addresses = new OutageDay(JsonAddresses, dt, id, link);
                 if(addresses.getAddresses().size() > 0 && link.length() >0)
-                    optionalAdresses = Optional.of(addresses);
+                    optionalAddresses = Optional.of(addresses);
             }
         }
-        return optionalAdresses;
+        return optionalAddresses;
     }
 
     public int getLastId() throws SQLException{
-        final String queryStatement = "SELECT MAX(id) FROM " + TABLE_NAME;
+        final String queryStatement = "SELECT MAX(outage_id) FROM " + TABLE_NAME;
         try(PreparedStatement ps = conn.prepareStatement(queryStatement)){
             ResultSet rs = ps.executeQuery(queryStatement);
             if(rs.next()){

@@ -11,12 +11,12 @@ public class Main {
         String urlTemplate = "https://eres.md/abon/planotkl/3-planotkl/%d}";
         ERESParser parser = new ERESParser();
         List<String> links = parser.getOutageLinks();
-        DBHelper dbh = new DBHelper();
+        DBHelper dbh = new DBHelper("./conf/oracle_db.properties");
         int lastId = dbh.getLastId();
         for(String link : links){
             try{
                 URL url = new URL(link);
-                Adresses day = parser.getOutageSetOfAddresses(url);
+                OutageDay day = parser.getOutageSetOfAddresses(url);
                 System.out.println(day.getLink());
                 if(day.getId()>lastId)
                     dbh.writeOutageDay(day.getId(), day.getLdt(), day.getLink(), day.getAddressesToJsonString());
@@ -26,7 +26,7 @@ public class Main {
                     System.out.println(e.getMessage());
                 }
         }
-        Adresses a2 = dbh.getOutageDayById(7934).get();
+        OutageDay a2 = dbh.getOutageDayById(dbh.getLastId()).get();
         System.out.println(a2.getLdt());
         System.out.println(a2.getPrettyPrintString("","","",""));
     }
