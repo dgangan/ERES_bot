@@ -5,6 +5,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.sql.*;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
 
@@ -38,6 +40,7 @@ public class DBHelper {
         pds.setMaxPoolSize(20);
         pds.getConnection();
         conn = pds.getConnection();
+        conn.setAutoCommit(false);
     }
 
     public void writeOutageDay(Integer id, LocalDate date, String link, String jsonAddresses) throws SQLException {
@@ -78,15 +81,62 @@ public class DBHelper {
         return optionalAddresses;
     }
 
+    public List<OutageDay> getOutageDaysByRange(LocalDate startDate, LocalDate endDate) throws IOException,SQLException{
+        final String queryStatement = "SELECT outage_id, outage_date, outage_link, outage_data FROM "
+                                            + TABLE_NAME
+                                            + " WHERE outage_date BETWEEN (?) AND (?)"
+                                            + " ORDER BY outage_date ASC";
+        List<OutageDay> outagesByRange = new ArrayList<>();
+
+        try (PreparedStatement ps = conn.prepareStatement(queryStatement)){
+            ps.setDate(1, java.sql.Date.valueOf(startDate));
+            ps.setDate(2, java.sql.Date.valueOf(endDate));
+            ResultSet rs = ps.executeQuery();
+            conn.commit();
+            while(rs.next()){
+                int id = rs.getInt(1);
+                LocalDate dt = rs.getDate(2).toLocalDate();
+                String link = rs.getString(3);
+                Blob BlobJsonAddresses = rs.getBlob(4);
+                String JsonAddresses = blobToString(BlobJsonAddresses);
+                OutageDay addresses = new OutageDay(JsonAddresses, dt, id, link);
+                if(addresses.getAddresses().size() > 0 && link.length() >0)
+                    outagesByRange.add(addresses);
+            }
+        }
+        return outagesByRange;
+    }
+
+    public List<OutageDay> getOutageDaysFromDate(LocalDate startDate) throws IOException,SQLException{
+        return this.getOutageDaysByRange(startDate, this.getLastDate());
+    }
+
+    public List<OutageDay> getOutageDaysToDate(LocalDate endDate) throws IOException,SQLException{
+        return this.getOutageDaysByRange(LocalDate.of(2000,01,01),endDate);
+    }
+
     public int getLastId() throws SQLException{
         final String queryStatement = "SELECT MAX(outage_id) FROM " + TABLE_NAME;
         try(PreparedStatement ps = conn.prepareStatement(queryStatement)){
             ResultSet rs = ps.executeQuery(queryStatement);
+            conn.commit();
             if(rs.next()){
                 return rs.getInt(1);
             }
             return 0;
         }
+    }
+
+    public LocalDate getLastDate() throws SQLException{
+        final String queryStatement = "SELECT MAX(outage_date) FROM " + TABLE_NAME;
+        try(PreparedStatement ps = conn.prepareStatement(queryStatement)){
+            ResultSet rs = ps.executeQuery();
+            conn.commit();
+            if(rs.next()){
+                return rs.getDate(1).toLocalDate();
+            }
+        }
+        return null;
     }
 
     private String blobToString(Blob blob) throws IOException, SQLException{

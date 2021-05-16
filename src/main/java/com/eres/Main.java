@@ -3,6 +3,7 @@ package com.eres;
 import org.jsoup.HttpStatusException;
 import java.io.IOException;
 import java.net.URL;
+import java.time.LocalDate;
 import java.util.List;
 
 public class Main {
@@ -26,8 +27,11 @@ public class Main {
                     System.out.println(e.getMessage());
                 }
         }
-        OutageDay a2 = dbh.getOutageDayById(dbh.getLastId()).get();
-        System.out.println(a2.getLdt());
-        System.out.println(a2.getPrettyPrintString("","","",""));
+//        OutageDay a2 = dbh.getOutageDayById(dbh.getLastId()).get();
+//        System.out.println(a2.getLdt());
+//        System.out.println(a2.getPrettyPrintString("","","",""));
+        List<OutageDay> outagesRange = dbh.getOutageDaysFromDate(LocalDate.of(2021,05,16));
+        System.out.println("Range:");
+        outagesRange.forEach(d -> System.out.println(d.getLink()));
     }
 }

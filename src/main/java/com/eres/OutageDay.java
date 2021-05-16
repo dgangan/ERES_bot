@@ -25,7 +25,6 @@ public class OutageDay {
 
     public OutageDay(String addresses, LocalDate ldt, Integer id, String link) {
         try{
-            System.out.println(addresses);
             setAddressesFromJsonString(addresses);
             this.ldt = ldt;
             this.id = id;
