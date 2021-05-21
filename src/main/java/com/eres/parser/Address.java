@@ -1,4 +1,4 @@
-package com.eres;
+package com.eres.parser;
 
 import java.time.LocalDate;
 

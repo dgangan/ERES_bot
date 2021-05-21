@@ -1,4 +1,4 @@
-package com.eres;
+package com.eres.parser;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -51,7 +51,7 @@ public class OutageDay {
                         )));
     }
 
-    public String getPrettyPrintString(String region, String city, String street, String details){
+    public String getPrettyPrintString(String region, String city, String street){
         var map = this.setOfAddressesToMap();
         StringBuilder sb = new StringBuilder();
         map.keySet().stream()

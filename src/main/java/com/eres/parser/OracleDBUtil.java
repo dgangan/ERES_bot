@@ -1,8 +1,11 @@
-package com.eres;
+package com.eres.parser;
 
-import java.io.BufferedReader;
+import com.eres.common.OracleDBCommon;
+import com.eres.common.PropertiesLoader;
+import oracle.ucp.jdbc.PoolDataSource;
+import oracle.ucp.jdbc.PoolDataSourceFactory;
+
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.sql.*;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -10,37 +13,12 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
 
-import oracle.ucp.jdbc.PoolDataSourceFactory;
-import oracle.ucp.jdbc.PoolDataSource;
-
-public class DBHelper {
-
-    String TABLE_NAME = "outages";
+public class OracleDBUtil {
     Connection conn;
+    String TABLE_NAME = "outages";
 
-    public DBHelper(String propertiesFile) throws SQLException, IOException {
-        Properties dbProperties = PropertiesLoader.loadPropertiesFile(propertiesFile);
-        final String DB_URL = dbProperties.getProperty("jdbc_url");
-        System.out.println(DB_URL);
-        final String DB_USER = dbProperties.getProperty("db_user");
-        final String DB_PASSWORD = dbProperties.getProperty("db_pass");
-        final String CONN_FACTORY_CLASS_NAME="oracle.jdbc.pool.OracleDataSource";
-
-        PoolDataSource pds = PoolDataSourceFactory.getPoolDataSource();
-
-        // Set the connection factory first before all other properties
-        pds.setConnectionFactoryClassName(CONN_FACTORY_CLASS_NAME);
-        pds.setURL(DB_URL);
-        pds.setUser(DB_USER);
-        pds.setPassword(DB_PASSWORD);
-        pds.setConnectionPoolName("JDBC_UCP_POOL");
-
-        pds.setInitialPoolSize(5);
-        pds.setMinPoolSize(5);
-        pds.setMaxPoolSize(20);
-        pds.getConnection();
-        conn = pds.getConnection();
-        conn.setAutoCommit(false);
+    public OracleDBUtil(Connection conn){
+        this.conn = conn;
     }
 
     public void writeOutageDay(Integer id, LocalDate date, String link, String jsonAddresses) throws SQLException {
@@ -72,7 +50,7 @@ public class DBHelper {
                 LocalDate dt = rs.getDate(2).toLocalDate();
                 String link = rs.getString(3);
                 Blob BlobJsonAddresses = rs.getBlob(4);
-                String JsonAddresses = blobToString(BlobJsonAddresses);
+                String JsonAddresses = OracleDBCommon.blobToString(BlobJsonAddresses);
                 OutageDay addresses = new OutageDay(JsonAddresses, dt, id, link);
                 if(addresses.getAddresses().size() > 0 && link.length() >0)
                     optionalAddresses = Optional.of(addresses);
@@ -83,9 +61,9 @@ public class DBHelper {
 
     public List<OutageDay> getOutageDaysByRange(LocalDate startDate, LocalDate endDate) throws IOException,SQLException{
         final String queryStatement = "SELECT outage_id, outage_date, outage_link, outage_data FROM "
-                                            + TABLE_NAME
-                                            + " WHERE outage_date BETWEEN (?) AND (?)"
-                                            + " ORDER BY outage_date ASC";
+                + TABLE_NAME
+                + " WHERE outage_date BETWEEN (?) AND (?)"
+                + " ORDER BY outage_date ASC";
         List<OutageDay> outagesByRange = new ArrayList<>();
 
         try (PreparedStatement ps = conn.prepareStatement(queryStatement)){
@@ -98,7 +76,7 @@ public class DBHelper {
                 LocalDate dt = rs.getDate(2).toLocalDate();
                 String link = rs.getString(3);
                 Blob BlobJsonAddresses = rs.getBlob(4);
-                String JsonAddresses = blobToString(BlobJsonAddresses);
+                String JsonAddresses = OracleDBCommon.blobToString(BlobJsonAddresses);
                 OutageDay addresses = new OutageDay(JsonAddresses, dt, id, link);
                 if(addresses.getAddresses().size() > 0 && link.length() >0)
                     outagesByRange.add(addresses);
@@ -137,14 +115,5 @@ public class DBHelper {
             }
         }
         return null;
-    }
-
-    private String blobToString(Blob blob) throws IOException, SQLException{
-        BufferedReader bufReader = new BufferedReader(new InputStreamReader(blob.getBinaryStream()));
-        StringBuilder sb = new StringBuilder();
-        String s;
-        while((s = bufReader.readLine()) != null)
-            sb.append(s);
-        return sb.substring(3);
     }
 }

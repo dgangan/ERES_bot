@@ -54,6 +54,10 @@
             <artifactId>osdt_core</artifactId>
             <version>19.3.0.0</version>
         </dependency>
-
+        <dependency>
+            <groupId>org.telegram</groupId>
+            <artifactId>telegrambots</artifactId>
+            <version>5.2.0</version>
+        </dependency>
     </dependencies>
 </project>
