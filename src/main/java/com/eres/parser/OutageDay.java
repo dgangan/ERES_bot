@@ -47,7 +47,9 @@ public class OutageDay {
                 .collect(
                     Collectors.groupingBy(Address::getRegion,
                         Collectors.groupingBy(Address::getCity,
-                            Collectors.toMap(Address::getStreet, Address::getDetails)
+                            Collectors.toMap(Address::getStreet, Address::getDetails, (details1, details2) -> {
+                                System.out.println("duplication found");
+                                return details1;})
                         )));
     }
 
@@ -56,13 +58,13 @@ public class OutageDay {
         StringBuilder sb = new StringBuilder();
         map.keySet().stream()
                 .filter(r -> r.equals(region) || region.isEmpty())
-                .peek(r -> sb.append("\n" + r + "\n"))
+                .peek(r -> sb.append("\n<b>" + r + "</b>\n"))
                 .forEach(r -> map.get(r).keySet().stream()
                         .filter((c -> c.equals(city) || city.isEmpty()))
-                        .peek(c -> sb.append("  " +c + ":" + "\n"))
+                        .peek(c -> sb.append("<u>    " +c + ":" + "</u>\n"))
                         .forEach(c -> map.get(r).get(c).keySet().stream()
                             .filter(s -> s.equals(street) || street.isEmpty())
-                            .forEach(s -> sb.append("\t" + s)
+                            .forEach(s -> sb.append("        " + s)
                                             .append(map.get(r).get(c).get(s).isEmpty() ? "\n" : ", " + map.get(r).get(c).get(s) + "\n"))
                         )
                 );

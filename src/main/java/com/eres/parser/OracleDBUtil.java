@@ -23,9 +23,6 @@ public class OracleDBUtil {
 
     public void writeOutageDay(Integer id, LocalDate date, String link, String jsonAddresses) throws SQLException {
         final String queryStatement = "INSERT INTO " + TABLE_NAME + " (outage_id, outage_date, outage_link, outage_data) VALUES (?,?,?,?)";
-
-        System.out.println("\n Query is " + queryStatement);
-
         conn.setAutoCommit(false);
         try (PreparedStatement ps = conn.prepareStatement(queryStatement)){
             ps.setInt(1,id);
@@ -37,7 +34,6 @@ public class OracleDBUtil {
             ps.executeUpdate();
             conn.commit();
 
-            System.out.println("DB was successfully updated. id -> " + id);
         }
     }
 
@@ -116,4 +112,5 @@ public class OracleDBUtil {
         }
         return null;
     }
+
 }

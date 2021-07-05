@@ -16,7 +16,7 @@ public class ERESParser {
     Set<Address> addresses;
     String outageLinksPage = "https://eres.md/abon/planotkl/3-planotkl";
     static String regionRegexp = ".*район:|.*Тирасполь:\\W*|.*Бендеры:\\W*";
-    static String cityAndDetailsRgx = ".*((?:с\\.|г\\.|пос\\.)\\W*?\\p{L}*?),\\W*?(.*?)[;,,](.*)?";
+    static String cityAndDetailsRgx = ".*((?:с\\.|г\\.|пос\\.)\\W*?[\\p{L}\\p{N}-]*?),\\W*?(.*?)[;,,](.*)?";
     static String cityAloneRgx = "((?:с\\.|г\\.|пос\\.)\\W*?\\p{L}*?):\\W*";
     static String streetRgx = "(.*?)[,,;](.*)?";
 
@@ -41,7 +41,7 @@ public class ERESParser {
                                                             .select("span").attr("style","text-decoration: underline;");
     }
 
-    public OutageDay getOutageSetOfAddresses(URL url) throws Exception{
+    public OutageDay parseOutagePage(URL url) throws Exception{
         String link = url.toString();
         Integer linkId = Integer.valueOf(link.split("/")[6].split("-")[0]);
         LocalDate date = LocalDate.parse(link.substring(link.length()-15, link.length()-5));
@@ -86,7 +86,7 @@ public class ERESParser {
         if (this.addresses.size() > 0) {
             return new OutageDay(addresses, date, linkId, link);}
         else {
-            throw new IOException("Parsing failed");
+            throw new IOException("Parsing failed: " + url);
         }
     }
 }

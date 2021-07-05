@@ -12,37 +12,26 @@ import org.telegram.telegrambots.updatesreceivers.DefaultBotSession;
 
 import java.io.IOException;
 import java.net.URL;
-import java.time.LocalDate;
 import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 public class Main {
 
     public static void main(String[] args) throws Exception{
+
         try {
             TelegramBotsApi botsApi = new TelegramBotsApi(DefaultBotSession.class);
-            botsApi.registerBot(new Bot());
+            Bot bot = Bot.getInstance();
+            botsApi.registerBot(bot);
             System.out.println("Telegram NMS bot has started");
+            bot.hello("181645724");
+            ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
+            executor.scheduleWithFixedDelay(new OutagesDBUpdater(), 1, 1, TimeUnit.MINUTES);
         } catch (TelegramApiException e) {
             e.printStackTrace();
         }
-//        String urlTemplate = "https://eres.md/abon/planotkl/3-planotkl/%d}";
-//        ERESParser parser = new ERESParser();
-//        List<String> links = parser.getOutageLinks();
-//        OracleDBUtil dbu = new OracleDBUtil(dbh.getConnection());
-//        int lastId = dbu.getLastId();
-//        for(String link : links){
-//            try{
-//                URL url = new URL(link);
-//                OutageDay day = parser.getOutageSetOfAddresses(url);
-//                System.out.println(day.getLink());
-//                if(day.getId()>lastId)
-//                    dbu.writeOutageDay(day.getId(), day.getLdt(), day.getLink(), day.getAddressesToJsonString());
-//            } catch (HttpStatusException e) {
-//                    System.out.println("HTTP: 404");
-//            } catch (IOException e) {
-//                    System.out.println(e.getMessage());
-//                }
-//        }
 //        OutageDay a2 = dbh.getOutageDayById(dbh.getLastId()).get();
 //        System.out.println(a2.getLdt());
 //        System.out.println(a2.getPrettyPrintString("","","",""));
@@ -50,4 +39,5 @@ public class Main {
 //        System.out.println("Range:");
 //        outagesRange.forEach(d -> System.out.println(d.getId() + ":" + d.getLdt() + ":" + d.getLink() +"\n<" + d.getPrettyPrintString("Рыбницкий район","с.Мокра","") + ">"));
     }
+
 }

@@ -40,13 +40,16 @@ public class OracleDBCommon {
         pds.setInitialPoolSize(5);
         pds.setMinPoolSize(5);
         pds.setMaxPoolSize(20);
-        pds.getConnection();
+        //pds.getConnection();
         conn = pds.getConnection();
         conn.setAutoCommit(false);
     }
 
     public static Connection getConnection() throws SQLException, IOException {
-        if (conn==null) createConnection(propFile);
+        if (conn==null || conn.isClosed()) {
+            System.out.println("Connection was closed. Recreating connection");
+            createConnection(propFile);
+        }
         return conn;
     }
 
