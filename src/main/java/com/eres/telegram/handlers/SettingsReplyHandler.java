@@ -31,15 +31,16 @@ public class SettingsReplyHandler {
                 else if(getCallbackData(update).equals("city_settings")){
                     deleteMessage(update);
                     Users.setState(Utils.getChatId(update), SettingsStates.SETTINGS_CITY);
-                    Bot.getInstance().setAnswer(Utils.getChatId(update), "Введите название населенного пункта: ");
+                    Bot.getInstance().setAnswer(Utils.getChatId(update), "\u2754 Введите название населенного пункта: ");
                 }
                 else if(getCallbackData(update).equals("street_settings")){
+                    deleteMessage(update);
                     Users.setState(Utils.getChatId(update), SettingsStates.SETTINGS_STREET);
-                    Bot.getInstance().setAnswer(Utils.getChatId(update), "Введите назваие улицы: ");
+                    Bot.getInstance().setAnswer(Utils.getChatId(update), "\u2754 Введите назваие улицы: ");
                 }
                 else if(getCallbackData(update).equals("reset_settings")){
                     deleteMessage(update);
-                    Bot.getInstance().setAnswer(Utils.getChatId(update), "\u2705 Настройки сброшены");
+                    Bot.getInstance().setAnswer(Utils.getChatId(update), "\uD83D\uDD04 Настройки сброшены");
                     sendMainSettingPage(update);
                     try{
                         new BotDBUtil(OracleDBCommon.getConnection()).deleteUserSettings(Utils.getChatId(update));
@@ -55,7 +56,7 @@ public class SettingsReplyHandler {
                     Users.setPreviousState(Utils.getChatId(update));
                     String region = Regions.valueOf(getCallbackData(update)).name;
                     deleteMessage(update);
-                    String answer = "Выбран населённый пункт: " + region;
+                    String answer = "\u2705 Выбран регион: " + region;
                     Bot.getInstance().setAnswer(Utils.getChatId(update), answer);
                     sendMainSettingPage(update);
                     try{
@@ -75,7 +76,7 @@ public class SettingsReplyHandler {
             if(update.hasMessage()) {
                 Users.setPreviousState(Utils.getChatId(update));
                 String city = update.getMessage().getText();
-                String answer = "Выбран населённый пункт: " + city;
+                String answer = "\u2705 Выбран населённый пункт: " + city;
                 Bot.getInstance().setAnswer(Utils.getChatId(update), answer);
                 sendMainSettingPage(update);
                 try{
@@ -89,7 +90,7 @@ public class SettingsReplyHandler {
             if(update.hasMessage()) {
                 Users.setPreviousState(Utils.getChatId(update));
                 String street = update.getMessage().getText();
-                String answer = "Выбран населённый пункт: " + street;
+                String answer = "\u2705 Выбрана улица: " + street;
                 Bot.getInstance().setAnswer(Utils.getChatId(update), answer);
                 sendMainSettingPage(update);
                 try{
@@ -125,12 +126,14 @@ public class SettingsReplyHandler {
 
     public static void sendMainSettingPage(Update update){
         SendMessage message = SettingsCommand.mainSettingsPage();
+        message.enableHtml(true);
         message.setChatId(Utils.getChatId(update).toString());
         Bot.getInstance().setAnswer(message);
     }
 
     private static void sendRegionPageSettings(Update update){
         SendMessage message = SettingsCommand.regionSettingsPage();
+        message.enableHtml(true);
         message.setChatId(Utils.getChatId(update).toString());
         Bot.getInstance().setAnswer(message);
     }
